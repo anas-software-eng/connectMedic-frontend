@@ -13,9 +13,9 @@ const BackButton = ({ to = "/", label = "Back", className = "" }) => {
     <button
       type="button"
       onClick={() => (canGoBack ? navigate(-1) : navigate(to, { replace: true }))}
-      className={`btn btn-ghost btn-sm gap-2 ${className}`}
+      className={`btn bg-base-100  gap-2 ${className} mb-10`}
     >
-      <ArrowLeft className="size-4" />
+      <ArrowLeft className="size-6" />
       {label}
     </button>
   );

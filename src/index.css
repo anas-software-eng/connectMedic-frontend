@@ -1,3 +1,56 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+.max-height--custom {
+    max-height: 68vh;
+    overflow-y: auto;
+}
+/* ---- Clinical motion ------------------------------------------------------
+   A few small, reusable utilities so the UI feels "monitored" rather than
+   decorated. All of them stop under prefers-reduced-motion. */
+
+/* Pulse ring: a vitals-monitor halo, e.g. around a live avatar. */
+@keyframes cm-pulse-ring {
+  0%   { box-shadow: 0 0 0 0 hsl(var(--p) / 0.45); }
+  70%  { box-shadow: 0 0 0 12px hsl(var(--p) / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--p) / 0); }
+}
+.cm-pulse { animation: cm-pulse-ring 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+
+/* Systole: the double-thump of a heartbeat. Pair with an icon. */
+@keyframes cm-beat {
+  0%, 28%, 100% { transform: scale(1); }
+  10%           { transform: scale(1.18); }
+  20%           { transform: scale(1.08); }
+}
+.cm-beat { animation: cm-beat 1.6s ease-in-out infinite; transform-origin: center; }
+
+/* ECG sweep: draws the trace left to right, like a strip chart.
+   Apply to an SVG <path>; pathLength="1" keeps the dash math simple. */
+@keyframes cm-ecg {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: -1; }
+}
+.cm-ecg {
+  stroke-dasharray: 1 1;
+  animation: cm-ecg 3s linear infinite;
+}
+
+/* Vitals reading fading up as it settles — good for stat tiles. */
+@keyframes cm-settle {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+.cm-settle { animation: cm-settle 0.5s ease-out both; }
+
+/* Stagger children so a row of tiles reads in sequence. */
+.cm-stagger > * { animation: cm-settle 0.5s ease-out both; }
+.cm-stagger > :nth-child(2) { animation-delay: 0.08s; }
+.cm-stagger > :nth-child(3) { animation-delay: 0.16s; }
+.cm-stagger > :nth-child(4) { animation-delay: 0.24s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-pulse, .cm-beat, .cm-ecg, .cm-settle, .cm-stagger > * {
+    animation: none;
+  }
+}

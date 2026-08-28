@@ -30,13 +30,13 @@ const DashBoard = () => {
       {/* Soft wash behind the header so the page has depth without a hard band. */}
       <div className="bg-gradient-to-b from-primary/[0.07] to-transparent pt-24 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {!isOverview && (
+       
             <BackButton to="/dashboard" label="Back to overview" className="mb-3 -ml-3" />
-          )}
+     
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5 cm-stagger">
             <div className="avatar">
-              <div className="size-14 rounded-2xl ring-2 ring-primary/20 ring-offset-2 ring-offset-base-200">
+              <div className="size-14 rounded-2xl ring-2 ring-primary/20 ring-offset-2 ring-offset-base-200 cm-pulse">
                 <img
                   src={authUser?.profilePic || "/avatar.png"}
                   alt={authUser?.fullName ?? "Your avatar"}
@@ -46,7 +46,7 @@ const DashBoard = () => {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className="badge badge-primary badge-sm font-medium">{config.label}</span>
+                <span className="badge badge-primary  p-3 font-bold">{config.label}</span>
                 <span className="text-xs text-base-content/50">{today()}</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">
@@ -65,15 +65,15 @@ const DashBoard = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 max-height--custom">
         <div className="flex flex-col lg:flex-row gap-6">
-          <nav className="lg:w-60 shrink-0">
-            <div className="lg:sticky lg:top-24">
-              <ul className="menu bg-base-100 border border-base-300/70 rounded-2xl shadow-sm w-full gap-1 p-2 flex-row lg:flex-col overflow-x-auto lg:overflow-visible">
+          <nav className="lg:w-60 shrink-0 bg-base-100 border border-base-300/70 rounded-2xl shadow-sm w-full gap-1 p-2 flex-row lg:flex-col overflow-x-auto lg:overflow-visible">
+            <div className="lg:sticky lg:top-9 ">
+              <ul className="menu ">
                 {config.nav.map((item) => {
                   const Icon = item.icon;
                   return (
-                    <li key={item.id} className="shrink-0">
+                    <li key={item.id} className="shrink-0 mb-4">
                       <NavLink
                         to={item.to}
                         end={item.end}
