@@ -82,6 +82,22 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  // Doctor onboarding form -> /doctors/mine. The API returns the flattened
+  // user (with the doctor profile merged in) so auth state stays in sync.
+  saveDoctorProfile: async (data) => {
+    set({ isUpdatingProfile: true });
+    try {
+      const res = await axiosInstance.put("/doctors/mine", data);
+      set({ authUser: res.data });
+      toast.success("Doctor profile saved");
+    } catch (error) {
+      console.log("error in saveDoctorProfile:", error);
+      toast.error(error.response?.data?.message || "Could not save profile");
+    } finally {
+      set({ isUpdatingProfile: false });
+    }
+  },
+
   connectSocket: () => {
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;

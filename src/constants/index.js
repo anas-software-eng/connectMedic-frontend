@@ -30,3 +30,14 @@ export const THEMES = [
 
 export const THEME_IDS = THEMES.map((t) => t.id);
 export const DEFAULT_THEME = "corporate";
+
+// Mirrors the `day` enum on the doctor schema.
+export const DAYS = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];

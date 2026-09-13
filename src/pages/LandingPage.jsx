@@ -55,25 +55,25 @@ const LandingPage = () => {
   const steps = [
     {
       icon: <ClipboardList className="w-6 h-6" />,
-      title: "Create your patient profile",
-      description: "Verify your identity and connect to your clinic in a couple of minutes.",
+      title: "Create your account",
+      description: "Sign up as a patient or a doctor in a couple of minutes.",
     },
     {
       icon: <Stethoscope className="w-6 h-6" />,
-      title: "Reach your care team",
-      description: "Start a secure thread with the provider or department you need.",
+      title: "Find your doctor",
+      description: "Search verified specialists, compare fees, and check live availability.",
     },
     {
       icon: <HeartPulse className="w-6 h-6" />,
-      title: "Stay on top of your care",
-      description: "Follow up on results, plans, and medications between visits.",
+      title: "Book and follow up",
+      description: "Pick a time slot that suits you and get secure updates between visits.",
     },
   ];
 
   const stats = [
-    { value: "24/7", label: "Secure inbox access" },
-    { value: "< 2 hrs", label: "Median clinician reply" },
-    { value: "256-bit", label: "Encryption in transit" },
+    { value: "30 min", label: "Time-slot booking grid" },
+    { value: "24/7", label: "Self-serve booking access" },
+    { value: "100%", label: "Verified doctor profiles" },
   ];
 
   return (
@@ -94,20 +94,28 @@ const LandingPage = () => {
             </div>
 
             <h1 className="text-4xl sm:text-5xl font-bold mb-6 leading-tight">
-              Care that keeps talking
-              <span className="text-primary"> between visits</span>
+              Find the right doctor,
+              <span className="text-primary"> book in seconds</span>
             </h1>
             <p className="text-lg text-base-content/70 mb-8 max-w-2xl mx-auto">
-              ConnectMedic gives patients and clinicians one secure place to share symptoms,
-              results, and care plans - so nothing important waits for the next appointment.
+              Search verified doctors, compare fees and availability, and book a
+              visit that fits your schedule - then follow up securely after
+              your appointment.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/signup" className="btn btn-primary btn-lg">
-                Create Patient Account
+                Find a Doctor
               </Link>
               <Link to="/login" className="btn btn-outline btn-lg">
                 Sign In
+              </Link>
+            </div>
+
+            <div className="mt-4 text-sm text-base-content/60">
+              Are you a doctor?{" "}
+              <Link to="/signup" className="link link-primary">
+                Register your practice
               </Link>
             </div>
 
@@ -126,7 +134,7 @@ const LandingPage = () => {
       {/* Features Section */}
       <div className="py-20 bg-base-100">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-4">Built for clinical conversations</h2>
+          <h2 className="text-4xl font-bold text-center mb-4">Simple booking, secure follow-up</h2>
           <p className="text-center text-base-content/70 mb-12 max-w-2xl mx-auto">
             Not another chat app. ConnectMedic is designed around how care teams actually
             communicate with the people they treat.
@@ -187,14 +195,19 @@ const LandingPage = () => {
       {/* CTA Section */}
       <div className="py-20 bg-base-200">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4">Ready to connect with your care team?</h2>
+          <h2 className="text-4xl font-bold mb-4">Book your next visit in minutes</h2>
           <p className="text-lg text-base-content/70 mb-8 max-w-xl mx-auto">
-            Join the patients and clinicians already coordinating care on ConnectMedic. Free for
-            patients, always.
+            Join the patients and clinicians already coordinating care on
+            ConnectMedic. Free for patients, always.
           </p>
-          <Link to="/signup" className="btn btn-primary btn-lg">
-            Get Started
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link to="/signup" className="btn btn-primary btn-lg">
+              Get Started
+            </Link>
+            <Link to="/signup" className="btn btn-outline btn-lg">
+              Register as a doctor
+            </Link>
+          </div>
         </div>
       </div>
 

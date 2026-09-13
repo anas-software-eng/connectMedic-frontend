@@ -18,19 +18,9 @@ import {
   useListCollection,
 }
   from "@chakra-ui/react"
+import { SPECIALIZATIONS } from "../constants/specializations";
 
-const specializations = [
-  { label: "General Physician", value: "general-physician" },
-  { label: "Cardiologist", value: "cardiologist" },
-  { label: "Dermatologist", value: "dermatologist" },
-  { label: "Neurologist", value: "neurologist" },
-  { label: "Orthopedic Surgeon", value: "orthopedic-surgeon" },
-  { label: "Pediatrician", value: "pediatrician" },
-  { label: "Gynecologist", value: "gynecologist" },
-  { label: "Psychiatrist", value: "psychiatrist" },
-  { label: "ENT Specialist", value: "ent-specialist" },
-  { label: "Ophthalmologist", value: "ophthalmologist" },
-];
+const specializations = SPECIALIZATIONS;
 
 // Mirrors the `day` enum on the doctor schema, lowercase values and all.
 const DAYS = [
@@ -56,7 +46,7 @@ const inputBox =
 const labelBox = "block text-sm font-medium text-base-content mb-2";
 
 const ProfilePage = () => {
-  const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
+  const { authUser, isUpdatingProfile, updateProfile, saveDoctorProfile } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
   const [qualifications, setQualifications] = useState([]);
   const [specialization, setSpecialization] = useState("");
@@ -123,7 +113,7 @@ const ProfilePage = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    await updateProfile({
+    await saveDoctorProfile({
       ...form,
       experienceYears: Number(form.experienceYears) || 0,
       consultationFee: Number(form.consultationFee) || 0,

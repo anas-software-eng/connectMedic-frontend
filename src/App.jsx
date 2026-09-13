@@ -1,23 +1,37 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Loader } from "lucide-react";
 
 import RootLayout from "./components/RootLayout";
 import RoleRoute from "./components/RoleRoute";
 
-import LandingPage from "./pages/LandingPage";
-import Message from "./pages/Message";
-import DashBoard from "./pages/DashBoard";
-import DashboardHome from "./pages/dashboard/DashboardHome";
-import PlaceholderPage from "./pages/dashboard/PlaceholderPage";
-import CareTeamPage from "./pages/dashboard/CareTeamPage";
-import SignUpPage from "./pages/SignUpPage";
-import LoginPage from "./pages/LoginPage";
-import SettingsPage from "./pages/SettingsPage";
-import ProfilePage from "./pages/ProfilePage";
+// Lazy-loaded so the first paint doesn't pay for the whole app (cards, chat,
+// chakra-based profile form, admin views) up front.
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const Message = lazy(() => import("./pages/Message"));
+const DashBoard = lazy(() => import("./pages/DashBoard"));
+const DashboardHome = lazy(() => import("./pages/dashboard/DashboardHome"));
+const PlaceholderPage = lazy(() => import("./pages/dashboard/PlaceholderPage"));
+const CareTeamPage = lazy(() => import("./pages/dashboard/CareTeamPage"));
+const SignUpPage = lazy(() => import("./pages/SignUpPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const FindDoctorsPage = lazy(() => import("./pages/FindDoctorsPage"));
+const DoctorDetailPage = lazy(() => import("./pages/DoctorDetailPage"));
+const AppointmentsPage = lazy(() => import("./pages/AppointmentsPage"));
+const PatientsPage = lazy(() => import("./pages/PatientsPage"));
+const VerifyDoctorsPage = lazy(() => import("./pages/VerifyDoctorsPage"));
+const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
 
 import { useAuthStore } from "./store/useAuthStore";
 import { ROLES } from "./constants/dashboard";
+
+const PageLoader = (
+  <div className="flex items-center justify-center h-screen">
+    <Loader className="size-10 animate-spin" />
+  </div>
+);
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
@@ -26,21 +40,17 @@ const App = () => {
     checkAuth();
   }, [checkAuth]);
 
-  if (isCheckingAuth)
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader className="size-10 animate-spin" />
-      </div>
-    );
+  if (isCheckingAuth) return PageLoader;
 
   return (
-    <Routes>
+    <Suspense fallback={PageLoader}>
+      <Routes>
       {/* Layout route: navbar + theme + toasts wrap every page via <Outlet />. */}
       <Route element={<RootLayout />}>
         <Route index element={authUser ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
         <Route path="signup" element={!authUser ? <SignUpPage /> : <Navigate to="/dashboard" />} />
         <Route path="login" element={!authUser ? <LoginPage /> : <Navigate to="/dashboard" />} />
-        <Route path="settings" element={<SettingsPage />} />
+        <Route path="settings" element={<SettingsPage />} /> 
 
         {/* Pathless guard: everything nested here requires a session. */}
         <Route element={<RoleRoute />}>
@@ -49,17 +59,19 @@ const App = () => {
           {/* Shared dashboard shell; nested routes fill its <Outlet />. */}
           <Route path="dashboard" element={<DashBoard />}>
             <Route index element={<DashboardHome />} />
+            <Route path="find-doctors" element={<FindDoctorsPage />} />
+            <Route path="find-doctors/:id" element={<DoctorDetailPage />} />
+            <Route path="appointments" element={<AppointmentsPage />} />
             <Route path="care-team" element={<CareTeamPage />} />
             <Route path="messages" element={<Message />} />
-            <Route path="records" element={<PlaceholderPage title="Records" />} />
 
-            <Route element={<RoleRoute allow={[ROLES.DOCTOR, ROLES.ADMIN]} />}>
-              <Route path="patients" element={<PlaceholderPage title="Patients" />} />
-              <Route path="schedule" element={<PlaceholderPage title="Schedule" />} />
+            <Route element={<RoleRoute allow={[ROLES.DOCTOR]} />}>
+              <Route path="patients" element={<PatientsPage />} />
             </Route>
 
             <Route element={<RoleRoute allow={[ROLES.ADMIN]} />}>
-              <Route path="admin/users" element={<PlaceholderPage title="Users" />} />
+              <Route path="verify-doctors" element={<VerifyDoctorsPage />} />
+              <Route path="admin/users" element={<AdminUsersPage />} />
               <Route path="admin/audit" element={<PlaceholderPage title="Audit log" />} />
             </Route>
 
@@ -72,7 +84,8 @@ const App = () => {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 };
 export default App;

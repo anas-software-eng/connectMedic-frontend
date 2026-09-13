@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation, Link } from "react-router-dom";
+import { NavLink, Outlet, Link } from "react-router-dom";
 import BackButton from "../components/BackButton";
 import { useAuthStore } from "../store/useAuthStore";
 import { getDashboardConfig } from "../constants/dashboard";
@@ -13,10 +13,6 @@ const today = () =>
 const DashBoard = () => {
   const { authUser, onlineUsers } = useAuthStore();
   const config = getDashboardConfig(authUser?.role);
-  const { pathname } = useLocation();
-
-  // The overview is the dashboard root, so there is nowhere to go back to.
-  const isOverview = pathname.replace(/\/$/, "") === "/dashboard";
 
   // Live values the client already knows about; everything else stays at its
   // configured default until a real endpoint backs it.
