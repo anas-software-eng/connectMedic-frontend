@@ -16,7 +16,7 @@ const NoChatSelected = () => {
           <Users className="size-4" />
           Browse care team
         </Link>
-        <p className="text-xs text-base-content/50">
+        <p className="text-xs text-base-content/72">
           For a medical emergency, call your local emergency number instead of messaging.
         </p>
       </div>

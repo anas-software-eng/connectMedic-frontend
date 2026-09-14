@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { BadgeCheck, MapPin, Search, Star, Stethoscope } from "lucide-react";
 import { useDoctorStore } from "../store/useDoctorStore";
 import { formatSpec } from "../lib/utils";
@@ -9,8 +9,11 @@ const STAR = Star;
 
 const FindDoctorsPage = () => {
   const { doctors, fetchDoctors, isFetching } = useDoctorStore();
+  const [searchParams] = useSearchParams();
   const [query, setQuery] = useState("");
-  const [specialization, setSpecialization] = useState("");
+  // Lets links elsewhere in the app (e.g. the AI assistant's suggestions)
+  // land here pre-filtered: /dashboard/find-doctors?specialization=cardiologist
+  const [specialization, setSpecialization] = useState(searchParams.get("specialization") || "");
 
   useEffect(() => {
     fetchDoctors({});
@@ -29,7 +32,7 @@ const FindDoctorsPage = () => {
       <div className="bg-base-100 border border-base-300/70 rounded-2xl shadow-sm p-5">
         <div className="flex flex-col sm:flex-row gap-3">
           <label className="input input-bordered flex items-center gap-2 flex-1 rounded-xl">
-            <Search className="size-4 text-base-content/40" />
+            <Search className="size-4 text-base-content/65" />
             <input
               type="text"
               className="grow"
@@ -87,7 +90,7 @@ const FindDoctorsPage = () => {
                   <p className="text-sm text-primary font-medium">
                     {formatSpec(doctor.specialization)}
                   </p>
-                  <p className="text-xs text-base-content/50 flex items-center gap-1 mt-0.5">
+                  <p className="text-xs text-base-content/72 flex items-center gap-1 mt-0.5">
                     <MapPin className="size-3" /> {doctor.clinicAddress || "Location on profile"}
                   </p>
                 </div>
@@ -99,7 +102,7 @@ const FindDoctorsPage = () => {
                   {doctor.rating ? doctor.rating.toFixed(1) : "New"}
                 </span>
                 <span className="font-semibold">
-                  ${doctor.consultationFee} <span className="text-xs text-base-content/50 font-normal">/ visit</span>
+                  ${doctor.consultationFee} <span className="text-xs text-base-content/72 font-normal">/ visit</span>
                 </span>
               </div>
 
@@ -111,7 +114,7 @@ const FindDoctorsPage = () => {
           ))}
         </div>
       ) : (
-        <div className="bg-base-100 border border-base-300/70 rounded-2xl shadow-sm px-6 py-14 text-center text-sm text-base-content/55">
+        <div className="bg-base-100 border border-base-300/70 rounded-2xl shadow-sm px-6 py-14 text-center text-sm text-base-content/72">
           No doctors match your search. Try a symptom like &quot;skin&quot; or &quot;chest pain&quot;.
         </div>
       )}

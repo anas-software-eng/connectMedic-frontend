@@ -6,7 +6,7 @@ const STYLES = {
 };
 
 const StatusBadge = ({ status }) => (
-  <span className={`badge badge-sm ${STYLES[status] || "badge-ghost"} capitalize`}>
+  <span className={`badge ${STYLES[status] || "badge-ghost"} capitalize`}>
     {status}
   </span>
 );

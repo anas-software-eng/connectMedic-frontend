@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
+import { getErrorMessage } from "../lib/utils";
 
 // Doctor directory + slot availability.
 export const useDoctorStore = create((set) => ({
@@ -19,7 +20,7 @@ export const useDoctorStore = create((set) => ({
       const res = await axiosInstance.get(`/doctors?${params.toString()}`);
       set({ doctors: res.data });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to load doctors");
+      toast.error(getErrorMessage(error, "Failed to load doctors"));
     } finally {
       set({ isFetching: false });
     }
@@ -31,7 +32,7 @@ export const useDoctorStore = create((set) => ({
       const res = await axiosInstance.get(`/doctors/${id}`);
       set({ doctor: res.data, slots: [] });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Doctor not found");
+      toast.error(getErrorMessage(error, "Doctor not found"));
     } finally {
       set({ isFetchingDoctor: false });
     }
@@ -45,7 +46,7 @@ export const useDoctorStore = create((set) => ({
       });
       set({ slots: res.data });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Could not load time slots");
+      toast.error(getErrorMessage(error, "Could not load time slots"));
       set({ slots: [] });
     }
   },

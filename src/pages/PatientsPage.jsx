@@ -15,7 +15,7 @@ const PatientsPage = () => {
       <div className="bg-base-100 border border-base-300/70 rounded-2xl shadow-sm p-5 flex items-center gap-2">
         <Users className="size-5 text-primary" />
         <span className="font-semibold">My patients</span>
-        <span className="text-sm text-base-content/50">({patients.length})</span>
+        <span className="text-sm text-base-content/72">({patients.length})</span>
       </div>
 
       {isFetching ? (
@@ -39,7 +39,7 @@ const PatientsPage = () => {
                 />
                 <div className="min-w-0">
                   <h3 className="font-semibold truncate">{patient.fullName}</h3>
-                  <p className="text-xs text-base-content/55">
+                  <p className="text-xs text-base-content/72">
                     {patient.total} visit{patient.total !== 1 ? "s" : ""} · last {formatDate(patient.lastDate)}
                   </p>
                 </div>
@@ -48,7 +48,7 @@ const PatientsPage = () => {
           ))}
         </div>
       ) : (
-        <div className="bg-base-100 border border-base-300/70 rounded-2xl shadow-sm px-6 py-14 text-center text-sm text-base-content/55">
+        <div className="bg-base-100 border border-base-300/70 rounded-2xl shadow-sm px-6 py-14 text-center text-sm text-base-content/72">
           You don&apos;t have any patients yet. They&apos;ll show up here once you confirm a booking.
         </div>
       )}

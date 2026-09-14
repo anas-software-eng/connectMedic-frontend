@@ -48,10 +48,10 @@ const SettingsPage = () => {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{t.name}</span>
-                      <span className="badge badge-ghost badge-sm">{t.mode}</span>
-                      {isActive && <span className="badge badge-primary badge-sm">Active</span>}
+                      <span className="badge badge-ghost">{t.mode}</span>
+                      {isActive && <span className="badge badge-primary">Active</span>}
                     </div>
-                    <p className="text-xs text-base-content/55 mt-0.5">{t.description}</p>
+                    <p className="text-xs text-base-content/72 mt-0.5">{t.description}</p>
                   </div>
                 </div>
               </button>

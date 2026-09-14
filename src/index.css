@@ -5,6 +5,40 @@
     max-height: 68vh;
     overflow-y: auto;
 }
+
+/* ---- Readability & accessibility --------------------------------------
+   This app is used by sick, elderly, and disabled patients — bigger text,
+   real contrast, and a visible keyboard focus ring aren't optional polish. */
+
+html {
+  /* Scales every rem-based Tailwind text/spacing utility up ~12%. */
+  font-size: 18px;
+}
+
+body {
+  line-height: 1.6;
+}
+
+/* A visible focus ring for keyboard and switch-device users — Tailwind's
+   reset otherwise leaves default outlines inconsistent across elements. */
+:focus-visible {
+  outline: 2px solid hsl(var(--p));
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Off-screen until focused, then jumps on screen as the first tab stop —
+   lets keyboard/screen-reader users skip the nav on every page. */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 100;
+  transition: top 0.15s ease-out;
+}
+.skip-link:focus {
+  top: 1rem;
+}
 /* ---- Clinical motion ------------------------------------------------------
    A few small, reusable utilities so the UI feels "monitored" rather than
    decorated. All of them stop under prefers-reduced-motion. */

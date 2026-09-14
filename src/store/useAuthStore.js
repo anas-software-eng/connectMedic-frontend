@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
+import { getErrorMessage } from "../lib/utils.js";
 
 const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:7500" : "/";
 
@@ -36,7 +37,7 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Account created successfully");
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(getErrorMessage(error, "Could not create account"));
     } finally {
       set({ isSigningUp: false });
     }
@@ -51,7 +52,7 @@ export const useAuthStore = create((set, get) => ({
 
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(getErrorMessage(error, "Could not log in"));
     } finally {
       set({ isLoggingIn: false });
     }
@@ -64,7 +65,7 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Logged out successfully");
       get().disconnectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(getErrorMessage(error, "Could not log out"));
     }
   },
 
@@ -76,7 +77,7 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Profile updated successfully");
     } catch (error) {
       console.log("error in update profile:", error);
-      toast.error(error.response.data.message);
+      toast.error(getErrorMessage(error, "Could not update profile"));
     } finally {
       set({ isUpdatingProfile: false });
     }
@@ -92,7 +93,7 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Doctor profile saved");
     } catch (error) {
       console.log("error in saveDoctorProfile:", error);
-      toast.error(error.response?.data?.message || "Could not save profile");
+      toast.error(getErrorMessage(error, "Could not save profile"));
     } finally {
       set({ isUpdatingProfile: false });
     }
@@ -102,11 +103,9 @@ export const useAuthStore = create((set, get) => ({
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
 
-    const socket = io(BASE_URL, {
-      query: {
-        userId: authUser._id,
-      },
-    });
+    // Identity comes from the httpOnly jwt cookie on the server side — never
+    // pass userId here, or any client could claim to be anyone.
+    const socket = io(BASE_URL, { withCredentials: true });
     socket.connect();
 
     set({ socket: socket });

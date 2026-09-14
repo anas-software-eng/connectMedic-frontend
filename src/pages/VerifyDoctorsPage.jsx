@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import toast from "react-hot-toast";
 import {
   BadgeCheck,
   BadgeX,
@@ -8,11 +7,11 @@ import {
   ExternalLink,
   GraduationCap,
   Languages,
-  Loader2,
   Mail,
   MapPin,
+  Trash2,
 } from "lucide-react";
-import { axiosInstance } from "../lib/axios";
+import { useAdminStore } from "../store/useAdminStore";
 import { formatSpec, formatTime } from "../lib/utils";
 import { DAYS } from "../constants";
 
@@ -25,17 +24,17 @@ const hoursSummary = (availability) =>
 
 const ChipRow = ({ icon: Icon, items, empty }) => (
   <div className="flex items-start gap-2 text-xs">
-    <Icon className="size-3.5 mt-0.5 text-base-content/40 shrink-0" />
+    <Icon className="size-3.5 mt-0.5 text-base-content/65 shrink-0" />
     {items.length ? (
       <div className="flex flex-wrap gap-1">
         {items.map((item) => (
-          <span key={item} className="badge badge-sm badge-ghost">
+          <span key={item} className="badge badge-ghost">
             {item}
           </span>
         ))}
       </div>
     ) : (
-      <span className="text-base-content/40">{empty}</span>
+      <span className="text-base-content/65">{empty}</span>
     )}
   </div>
 );
@@ -47,38 +46,15 @@ const STATUS_TABS = [
 
 const VerifyDoctorsPage = () => {
   const [tab, setTab] = useState("false");
-  const [doctors, setDoctors] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [updatingId, setUpdatingId] = useState(null);
-
-  const load = async (verified) => {
-    setLoading(true);
-    try {
-      const res = await axiosInstance.get("/admin/doctors", {
-        params: { verified },
-      });
-      setDoctors(res.data);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to load doctors");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { doctors, isFetching, fetchDoctors, setDoctorVerified, deleteDoctor } = useAdminStore();
 
   useEffect(() => {
-    load(tab);
-  }, [tab]);
+    fetchDoctors(tab);
+  }, [tab, fetchDoctors]);
 
-  const setVerified = async (doctor, isVerified) => {
-    setUpdatingId(doctor._id);
-    try {
-      await axiosInstance.put(`/admin/doctors/${doctor._id}/verify`, { isVerified });
-      toast.success(isVerified ? "Doctor approved" : "Verification revoked");
-      load(tab);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Update failed");
-    } finally {
-      setUpdatingId(null);
+  const handleRemove = (doctor) => {
+    if (window.confirm(`Permanently remove ${doctor.userId?.fullName || "this doctor"}'s profile? This cannot be undone.`)) {
+      deleteDoctor(doctor._id);
     }
   };
 
@@ -96,7 +72,7 @@ const VerifyDoctorsPage = () => {
         ))}
       </div>
 
-      {loading ? (
+      {isFetching ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-44 rounded-2xl bg-base-100 border border-base-300/70 animate-pulse" />
@@ -112,16 +88,24 @@ const VerifyDoctorsPage = () => {
                   alt={doctor.userId?.fullName || "Doctor"}
                   className="size-12 rounded-full object-cover"
                 />
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <h3 className="font-semibold truncate">{doctor.userId?.fullName || "Doctor"}</h3>
                   <p className="text-primary text-sm">{formatSpec(doctor.specialization)}</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemove(doctor)}
+                  aria-label="Remove doctor profile"
+                  className="btn btn-ghost btn-sm btn-square text-error"
+                >
+                  <Trash2 className="size-4" />
+                </button>
               </div>
 
-              <p className="mt-3 text-xs text-base-content/55 flex items-center gap-1.5">
+              <p className="mt-3 text-xs text-base-content/72 flex items-center gap-1.5">
                 <Mail className="size-3.5" /> {doctor.userId?.email}
               </p>
-              <p className="text-xs text-base-content/55 mt-1">
+              <p className="text-xs text-base-content/72 mt-1">
                 License: {doctor.licenseNumber} · {doctor.experienceYears} yrs · ${doctor.consultationFee}/visit
               </p>
               {doctor.about && (
@@ -135,7 +119,7 @@ const VerifyDoctorsPage = () => {
                 <ChipRow icon={Languages} items={doctor.languages || []} empty="No languages added" />
                 <ChipRow icon={Clock} items={hoursSummary(doctor.availability)} empty="No working hours set" />
                 <div className="flex items-start gap-2 text-xs">
-                  <MapPin className="size-3.5 mt-0.5 text-base-content/40 shrink-0" />
+                  <MapPin className="size-3.5 mt-0.5 text-base-content/65 shrink-0" />
                   <span className="text-base-content/60">{doctor.clinicAddress || "No clinic address provided"}</span>
                 </div>
               </div>
@@ -155,20 +139,18 @@ const VerifyDoctorsPage = () => {
                     </span>
                     <button
                       className="btn btn-sm btn-ghost ml-auto"
-                      disabled={updatingId === doctor._id}
-                      onClick={() => setVerified(doctor, false)}
+                      onClick={() => setDoctorVerified(doctor, false)}
                     >
-                      {updatingId === doctor._id ? <Loader2 className="size-4 animate-spin" /> : <BadgeX className="size-4" />}
+                      <BadgeX className="size-4" />
                       Revoke
                     </button>
                   </>
                 ) : (
                   <button
                     className="btn btn-sm btn-primary w-full gap-1"
-                    disabled={updatingId === doctor._id}
-                    onClick={() => setVerified(doctor, true)}
+                    onClick={() => setDoctorVerified(doctor, true)}
                   >
-                    {updatingId === doctor._id ? <Loader2 className="size-4 animate-spin" /> : <BadgeCheck className="size-4" />}
+                    <BadgeCheck className="size-4" />
                     Approve doctor
                   </button>
                 )}
@@ -177,7 +159,7 @@ const VerifyDoctorsPage = () => {
           ))}
         </div>
       ) : (
-        <div className="bg-base-100 border border-base-300/70 rounded-2xl shadow-sm px-6 py-14 text-center text-sm text-base-content/55">
+        <div className="bg-base-100 border border-base-300/70 rounded-2xl shadow-sm px-6 py-14 text-center text-sm text-base-content/72">
           {tab === "false"
             ? "No doctor registrations waiting for review."
             : "No verified doctors yet."}

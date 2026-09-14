@@ -1,27 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { BadgeCheck, Plus, Star, Trash2, UserRoundPen, X, } from "lucide-react";
-import { Span, TagsInput, Combobox, Portal, useFilter, useListCollection, } from "@chakra-ui/react";
+import { BadgeCheck, Plus, Star, Trash2, UserRoundPen, X } from "lucide-react";
 
-import { useDocStore } from "../store/useDocStore";
-
-
-/* ------------------------------------------------------------------ *
- * Constants
- * ------------------------------------------------------------------ */
-const SPECIALIZATIONS = [
-  { label: "General Physician", value: "general-physician" },
-  { label: "Cardiologist", value: "cardiologist" },
-  { label: "Dermatologist", value: "dermatologist" },
-  { label: "Neurologist", value: "neurologist" },
-  { label: "Orthopedic Surgeon", value: "orthopedic-surgeon" },
-  { label: "Pediatrician", value: "pediatrician" },
-  { label: "Gynecologist", value: "gynecologist" },
-  { label: "Psychiatrist", value: "psychiatrist" },
-  { label: "ENT Specialist", value: "ent-specialist" },
-  { label: "Ophthalmologist", value: "ophthalmologist" },
-];
-
+import { useAuthStore } from "../store/useAuthStore";
+import { SPECIALIZATIONS } from "../constants/specializations";
 
 const DAYS = [
   "sunday",
@@ -48,12 +30,28 @@ const EMPTY_FORM = {
   isAvailable: true,
 };
 
+// authUser already carries the flattened doctor profile (see backend
+// withDoctorProfile) once one exists, so the form just reads off it directly
+// — no separate fetch needed.
+const formFromUser = (authUser) => ({
+  licenseNumber: authUser?.licenseNumber || "",
+  specialization: authUser?.specialization || "",
+  qualifications: authUser?.qualifications || [],
+  languages: authUser?.languages || [],
+  experienceYears: authUser?.experienceYears || 0,
+  consultationFee: authUser?.consultationFee || 0,
+  clinicAddress: authUser?.clinicAddress || "",
+  about: authUser?.about || "",
+  availability: authUser?.availability || [],
+  isAvailable: authUser?.isAvailable ?? true,
+});
+
 /* ------------------------------------------------------------------ *
  * Small presentational pieces
  * ------------------------------------------------------------------ */
 const StatTile = ({ label, children }) => (
   <div className="rounded-lg bg-base-100 border border-base-content/10 px-3 py-2.5">
-    <div className="text-xs text-base-content/50">{label}</div>
+    <div className="text-xs text-base-content/72">{label}</div>
     <div className="mt-1 text-sm font-medium">{children}</div>
   </div>
 );
@@ -80,41 +78,130 @@ const TextField = ({ as = "input", name, label, value, onChange, ...rest }) => {
   );
 };
 
-const TagField = ({ label, hint, placeholder, value, onChange }) => (
-  <TagsInput.Root value={value} onValueChange={(d) => onChange(d.value)} width="100%">
-    <TagsInput.Label className="label label-text">{label}</TagsInput.Label>
+// Type-to-filter dropdown, styled to match the rest of the DaisyUI form —
+// replaces the Chakra Combobox that used to live here.
+const SearchableSelect = ({ label, value, onChange, options, placeholder }) => {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
 
-    <TagsInput.Control className="input input-bordered flex h-auto min-h-12 w-full flex-wrap items-center gap-2 py-2">
+  useEffect(() => {
+    if (!open) return;
+    const onClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [open]);
 
-      <TagsInput.Context>
-        {({ value: tags }) =>
-          tags.map((tag, index) => (
-            <TagsInput.Item key={`${tag}-${index}`} index={index} value={tag}>
-              <TagsInput.ItemPreview className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-primary/15 text-primary text-xs font-medium ring-1 ring-primary/30">
-                <TagsInput.ItemText>{tag}</TagsInput.ItemText>
-                <TagsInput.ItemDeleteTrigger className="rounded-full p-0.5 opacity-70 hover:opacity-100 hover:bg-primary/25 transition">
-                  <X className="w-3 h-3" />
-                </TagsInput.ItemDeleteTrigger>
-              </TagsInput.ItemPreview>
+  const selected = options.find((o) => o.value === value);
+  const filtered = query.trim()
+    ? options.filter((o) => o.label.toLowerCase().includes(query.trim().toLowerCase()))
+    : options;
 
-              <TagsInput.ItemInput className="bg-base-100 text-base-content text-xs rounded px-2 py-1 outline-none ring-1 ring-primary" />
-            </TagsInput.Item>
-          ))
-        }
-      </TagsInput.Context>
-
-      <TagsInput.Input
+  return (
+    <div className="relative" ref={containerRef}>
+      <label className="label label-text">{label}</label>
+      <input
+        type="text"
+        className="input input-bordered w-full"
         placeholder={placeholder}
-        className="flex-1 min-w-36 bg-transparent text-sm text-base-content outline-none placeholder:text-base-content/40"
+        value={open ? query : selected?.label || ""}
+        onFocus={() => {
+          setOpen(true);
+          setQuery("");
+        }}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
       />
-    </TagsInput.Control>
+      {open && (
+        <ul className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-lg bg-base-100 border border-base-content/10 shadow-lg p-1">
+          {filtered.length === 0 ? (
+            <li className="px-3 py-2 text-sm text-base-content/72">No specialization found</li>
+          ) : (
+            filtered.map((option) => (
+              <li key={option.value}>
+                <button
+                  type="button"
+                  className={`w-full text-left rounded-md px-3 py-2 text-sm transition hover:bg-base-200 ${
+                    option.value === value ? "bg-base-200 font-medium text-primary" : ""
+                  }`}
+                  onClick={() => {
+                    onChange(option.value);
+                    setOpen(false);
+                    setQuery("");
+                  }}
+                >
+                  {option.label}
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
+    </div>
+  );
+};
 
-    <TagsInput.HiddenInput />
+// Free-form chip input (Enter or comma to add) — replaces the Chakra TagsInput.
+const TagField = ({ label, hint, placeholder, value, onChange }) => {
+  const [draft, setDraft] = useState("");
 
-    <Span className="block mt-2 text-xs text-base-content/50">{hint}</Span>
-  </TagsInput.Root>
-);
+  const commit = () => {
+    const tag = draft.trim();
+    if (tag && !value.includes(tag)) onChange([...value, tag]);
+    setDraft("");
+  };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      commit();
+    } else if (e.key === "Backspace" && !draft && value.length) {
+      onChange(value.slice(0, -1));
+    }
+  };
+
+  const removeAt = (index) => onChange(value.filter((_, i) => i !== index));
+
+  return (
+    <div>
+      <label className="label label-text">{label}</label>
+      <div className="input input-bordered flex h-auto min-h-12 w-full flex-wrap items-center gap-2 py-2">
+        {value.map((tag, index) => (
+          <span
+            key={`${tag}-${index}`}
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 pl-2.5 pr-1.5 py-1 text-xs font-medium text-primary ring-1 ring-primary/30"
+          >
+            {tag}
+            <button
+              type="button"
+              onClick={() => removeAt(index)}
+              aria-label={`Remove ${tag}`}
+              className="rounded-full p-0.5 opacity-70 transition hover:bg-primary/25 hover:opacity-100"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </span>
+        ))}
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={commit}
+          placeholder={placeholder}
+          className="min-w-36 flex-1 bg-transparent text-sm text-base-content outline-none placeholder:text-base-content/65"
+        />
+      </div>
+      {hint && <span className="mt-2 block text-xs text-base-content/72">{hint}</span>}
+    </div>
+  );
+};
 
 const AvailabilityEditor = ({ slots, onChange }) => {
   const updateSlot = (index, key, value) =>
@@ -134,7 +221,7 @@ const AvailabilityEditor = ({ slots, onChange }) => {
       </div>
 
       {slots.length === 0 ? (
-        <p className="text-sm text-base-content/50 px-3 py-4 rounded-lg bg-base-100 border border-dashed border-base-content/15 text-center">
+        <p className="text-sm text-base-content/72 px-3 py-4 rounded-lg bg-base-100 border border-dashed border-base-content/15 text-center">
           No hours set yet. Add a slot so patients know when to reach you.
         </p>
       ) : (
@@ -164,7 +251,7 @@ const AvailabilityEditor = ({ slots, onChange }) => {
                 onChange={(e) => updateSlot(index, "startTime", e.target.value)}
                 className="input input-bordered input-sm"
               />
-              <span className="text-base-content/40 text-sm">to</span>
+              <span className="text-base-content/65 text-sm">to</span>
               <input
                 type="time"
                 value={slot.endTime}
@@ -176,7 +263,7 @@ const AvailabilityEditor = ({ slots, onChange }) => {
                 type="button"
                 onClick={() => removeSlot(index)}
                 aria-label={`Remove ${slot.day} slot`}
-                className="ml-auto p-2 rounded-md text-base-content/50 hover:text-error hover:bg-error/10 transition"
+                className="ml-auto p-2 rounded-md text-base-content/72 hover:text-error hover:bg-error/10 transition"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -188,29 +275,20 @@ const AvailabilityEditor = ({ slots, onChange }) => {
   );
 };
 
-
 const DoctorProfileSetUp = () => {
+  const authUser = useAuthStore((state) => state.authUser);
+  const saveDoctorProfile = useAuthStore((state) => state.saveDoctorProfile);
+  const isUpdatingProfile = useAuthStore((state) => state.isUpdatingProfile);
 
-  const createProfile = useDocStore((state) => state.createProfile);
-  const isCreatingProfile = useDocStore((state) => state.isCreatingProfile);
+  const isEditing = Boolean(authUser?.specialization);
+  const [form, setForm] = useState(() => formFromUser(authUser) || EMPTY_FORM);
 
-  // The doctor profile does not exist yet, so the form starts empty.
-  const [formData, setFormData] = useState(EMPTY_FORM);
-
-  // Chakra's combobox needs its own collection so it can filter as you type.
-  const { contains } = useFilter({ sensitivity: "base" });
-  const { collection, filter } = useListCollection({
-    initialItems: SPECIALIZATIONS,
-    filter: contains,
-  });
-
-  // One setter for every field: handleChange("about", value).
-  const handleChange = (key, value) => setFormData((prev) => ({ ...prev, [key]: value }));
+  const handleChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const handleSave = async (e) => {
     e.preventDefault();
-    await createProfile({
-      ...formData,
+    await saveDoctorProfile({
+      ...form,
       // Number inputs hand back strings; the API expects numbers.
       experienceYears: Number(form.experienceYears) || 0,
       consultationFee: Number(form.consultationFee) || 0,
@@ -224,28 +302,32 @@ const DoctorProfileSetUp = () => {
       onSubmit={handleSave}
       className="min-w-0 lg:min-h-[32rem] lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto bg-base-200 rounded-xl p-5 border border-base-content/10 space-y-6"
     >
-
       <div className="-mx-5 -mt-5 px-5 pt-5 pb-4 space-y-4 bg-base-200 rounded-t-xl border-b border-base-content/10">
         <div className="flex items-center gap-3">
           <UserRoundPen className="w-5 h-5 shrink-0 text-primary" />
-          <h2 className="text-lg font-medium">Set up your doctor profile</h2>
+          <h2 className="text-lg font-medium">
+            {isEditing ? "Your doctor profile" : "Set up your doctor profile"}
+          </h2>
         </div>
-
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 cm-stagger">
           <StatTile label="Rating">
             <span className="flex items-center gap-1.5">
               <Star className="w-4 h-4 text-warning" />
-              {(0).toFixed(1)}
+              {(authUser?.rating || 0).toFixed(1)}
             </span>
           </StatTile>
 
-          <StatTile label="Reviews">0</StatTile>
+          <StatTile label="Reviews">{authUser?.reviewCount || 0}</StatTile>
 
           <StatTile label="Verification">
-            <span className="flex items-center gap-1.5 text-base-content/60">
+            <span
+              className={`flex items-center gap-1.5 ${
+                authUser?.isVerified ? "text-success" : "text-base-content/60"
+              }`}
+            >
               <BadgeCheck className="w-4 h-4" />
-              Pending
+              {authUser?.isVerified ? "Verified" : "Pending"}
             </span>
           </StatTile>
         </div>
@@ -260,47 +342,13 @@ const DoctorProfileSetUp = () => {
         placeholder="e.g. PMDC-12345-P"
       />
 
-      <Combobox.Root
-        collection={collection}
-        value={form.specialization ? [form.specialization] : []}
-        onValueChange={(details) => handleChange("specialization", details.value[0] || "")}
-        onInputValueChange={(e) => filter(e.inputValue)}
-        width="100%"
-      >
-        <Combobox.Label className="label label-text">Specialization</Combobox.Label>
-
-        <Combobox.Control className="input input-bordered flex w-full items-center">
-          <Combobox.Input
-            placeholder="Search specialization..."
-            className="flex-1 bg-transparent text-sm text-base-content outline-none placeholder:text-base-content/40"
-          />
-          <Combobox.IndicatorGroup className="flex items-center gap-1 text-base-content/50">
-            <Combobox.ClearTrigger />
-            <Combobox.Trigger />
-          </Combobox.IndicatorGroup>
-        </Combobox.Control>
-
-        <Portal>
-          <Combobox.Positioner>
-            <Combobox.Content className="z-50 max-h-60 overflow-y-auto rounded-lg bg-base-100 border border-base-content/10 shadow-lg p-1">
-              <Combobox.Empty className="px-3 py-2 text-sm text-base-content/50">
-                No specialization found
-              </Combobox.Empty>
-
-              {collection.items.map((item) => (
-                <Combobox.Item
-                  item={item}
-                  key={item.value}
-                  className="flex items-center justify-between cursor-pointer rounded-md px-3 py-2 text-sm text-base-content hover:bg-base-200 data-[highlighted]:bg-base-200"
-                >
-                  {item.label}
-                  <Combobox.ItemIndicator />
-                </Combobox.Item>
-              ))}
-            </Combobox.Content>
-          </Combobox.Positioner>
-        </Portal>
-      </Combobox.Root>
+      <SearchableSelect
+        label="Specialization"
+        placeholder="Search specialization..."
+        options={SPECIALIZATIONS}
+        value={form.specialization}
+        onChange={(value) => handleChange("specialization", value)}
+      />
 
       <TagField
         label="Qualifications"
@@ -365,7 +413,7 @@ const DoctorProfileSetUp = () => {
       <label className="flex items-center justify-between gap-4 rounded-lg bg-base-100 border border-base-content/10 px-4 py-3 cursor-pointer">
         <span>
           <span className="block text-sm font-medium">Accepting patients</span>
-          <span className="block text-xs text-base-content/50 mt-0.5">
+          <span className="block text-xs text-base-content/72 mt-0.5">
             Turn this off to hide yourself from new bookings
           </span>
         </span>
@@ -377,11 +425,11 @@ const DoctorProfileSetUp = () => {
         />
       </label>
 
-      <button type="submit" disabled={isCreatingProfile} className="btn btn-primary w-full">
-        {isCreatingProfile ? "Saving..." : "Save profile"}
+      <button type="submit" disabled={isUpdatingProfile} className="btn btn-primary w-full">
+        {isUpdatingProfile ? "Saving..." : isEditing ? "Save changes" : "Save profile"}
       </button>
     </form>
-  )
-}
+  );
+};
 
 export default DoctorProfileSetUp;

@@ -4,14 +4,11 @@ import "./index.css";
 import App from "./App.jsx";
 
 import { BrowserRouter } from "react-router-dom";
-import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ChakraProvider value={defaultSystem}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </ChakraProvider>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </StrictMode>
 );

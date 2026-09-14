@@ -11,7 +11,6 @@ const LandingPage = lazy(() => import("./pages/LandingPage"));
 const Message = lazy(() => import("./pages/Message"));
 const DashBoard = lazy(() => import("./pages/DashBoard"));
 const DashboardHome = lazy(() => import("./pages/dashboard/DashboardHome"));
-const PlaceholderPage = lazy(() => import("./pages/dashboard/PlaceholderPage"));
 const CareTeamPage = lazy(() => import("./pages/dashboard/CareTeamPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
@@ -23,6 +22,12 @@ const AppointmentsPage = lazy(() => import("./pages/AppointmentsPage"));
 const PatientsPage = lazy(() => import("./pages/PatientsPage"));
 const VerifyDoctorsPage = lazy(() => import("./pages/VerifyDoctorsPage"));
 const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
+const AdminAppointmentsPage = lazy(() => import("./pages/AdminAppointmentsPage"));
+const AdminConversationPage = lazy(() => import("./pages/AdminConversationPage"));
+const AdminAnnouncementPage = lazy(() => import("./pages/AdminAnnouncementPage"));
+const AuditLogPage = lazy(() => import("./pages/AuditLogPage"));
+const AiAssistantPage = lazy(() => import("./pages/AiAssistantPage"));
+const VideoCallPage = lazy(() => import("./pages/VideoCallPage"));
 
 import { useAuthStore } from "./store/useAuthStore";
 import { ROLES } from "./constants/dashboard";
@@ -64,6 +69,11 @@ const App = () => {
             <Route path="appointments" element={<AppointmentsPage />} />
             <Route path="care-team" element={<CareTeamPage />} />
             <Route path="messages" element={<Message />} />
+            <Route path="call/:userId" element={<VideoCallPage />} />
+
+            <Route element={<RoleRoute allow={[ROLES.PATIENT]} />}>
+              <Route path="assistant" element={<AiAssistantPage />} />
+            </Route>
 
             <Route element={<RoleRoute allow={[ROLES.DOCTOR]} />}>
               <Route path="patients" element={<PatientsPage />} />
@@ -72,7 +82,10 @@ const App = () => {
             <Route element={<RoleRoute allow={[ROLES.ADMIN]} />}>
               <Route path="verify-doctors" element={<VerifyDoctorsPage />} />
               <Route path="admin/users" element={<AdminUsersPage />} />
-              <Route path="admin/audit" element={<PlaceholderPage title="Audit log" />} />
+              <Route path="admin/appointments" element={<AdminAppointmentsPage />} />
+              <Route path="admin/messages/:userAId/:userBId" element={<AdminConversationPage />} />
+              <Route path="admin/announce" element={<AdminAnnouncementPage />} />
+              <Route path="admin/audit" element={<AuditLogPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import {
-  Activity,
-  CalendarCheck,
+  BellRing,
   ClipboardList,
-  FileHeart,
   HeartPulse,
   Lock,
   MessagesSquare,
   ShieldCheck,
+  Sparkles,
+  Star,
   Stethoscope,
   Video,
 } from "lucide-react";
@@ -15,40 +15,40 @@ import {
 const LandingPage = () => {
   const features = [
     {
+      icon: <Stethoscope className="w-6 h-6" />,
+      title: "Find the Right Doctor",
+      description:
+        "Search by specialization or just describe a symptom - \"chest pain\" or \"skin rash\" - and we'll surface the right specialists, with ratings and fees up front.",
+    },
+    {
+      icon: <Sparkles className="w-6 h-6" />,
+      title: "AI Health Assistant",
+      description:
+        "Not sure what's wrong? Describe how you feel to our AI triage assistant, 24/7, and get pointed toward the right kind of doctor to book.",
+    },
+    {
       icon: <MessagesSquare className="w-6 h-6" />,
-      title: "Message Your Care Team",
+      title: "Real-Time Secure Messaging",
       description:
-        "Ask follow-up questions, report symptoms, and get answers from your clinicians without another waiting room.",
-    },
-    {
-      icon: <ShieldCheck className="w-6 h-6" />,
-      title: "HIPAA-Aligned Security",
-      description:
-        "Every message is encrypted in transit and at rest, with audit trails on all access to your record.",
-    },
-    {
-      icon: <FileHeart className="w-6 h-6" />,
-      title: "Results & Records",
-      description:
-        "Share lab results, imaging, and visit summaries in the same thread as the conversation about them.",
+        "Message your care team directly - typing indicators, read receipts, and photo sharing, all in one encrypted thread per doctor.",
     },
     {
       icon: <Video className="w-6 h-6" />,
-      title: "Telehealth Ready",
+      title: "Free Video Consultations",
       description:
-        "Move from a chat to a virtual visit when your provider decides a face-to-face check is needed.",
+        "Start a face-to-face video call with your doctor or patient straight from the chat or an appointment - no extra app, no extra cost.",
     },
     {
-      icon: <CalendarCheck className="w-6 h-6" />,
-      title: "Appointments & Refills",
+      icon: <BellRing className="w-6 h-6" />,
+      title: "Reminders & Live Notifications",
       description:
-        "Request visits, prescription refills, and referrals, and track where each request stands.",
+        "Get notified the moment a booking is confirmed, a message arrives, or your visit is coming up - nothing falls through the cracks.",
     },
     {
-      icon: <Activity className="w-6 h-6" />,
-      title: "Care Continuity",
+      icon: <Star className="w-6 h-6" />,
+      title: "Ratings You Can Trust",
       description:
-        "Your whole care team - primary, specialist, and nursing staff - works from one shared thread.",
+        "Every review comes from a patient with a completed visit - browse real feedback before you book, and leave your own after.",
     },
   ];
 
@@ -61,19 +61,19 @@ const LandingPage = () => {
     {
       icon: <Stethoscope className="w-6 h-6" />,
       title: "Find your doctor",
-      description: "Search verified specialists, compare fees, and check live availability.",
+      description: "Search by symptom or specialty, compare ratings and fees, and check live availability.",
     },
     {
       icon: <HeartPulse className="w-6 h-6" />,
-      title: "Book and follow up",
-      description: "Pick a time slot that suits you and get secure updates between visits.",
+      title: "Book, chat, and follow up",
+      description: "Pick a time slot, message or video call your doctor, and get reminders until it's done.",
     },
   ];
 
   const stats = [
-    { value: "30 min", label: "Time-slot booking grid" },
-    { value: "24/7", label: "Self-serve booking access" },
-    { value: "100%", label: "Verified doctor profiles" },
+    { value: "24/7", label: "AI-assisted symptom triage" },
+    { value: "100%", label: "Admin-verified doctor profiles" },
+    { value: "$0", label: "Cost for video consultations" },
   ];
 
   return (
@@ -94,13 +94,13 @@ const LandingPage = () => {
             </div>
 
             <h1 className="text-4xl sm:text-5xl font-bold mb-6 leading-tight">
-              Find the right doctor,
-              <span className="text-primary"> book in seconds</span>
+              From symptom to specialist,
+              <span className="text-primary"> all in one place</span>
             </h1>
             <p className="text-lg text-base-content/70 mb-8 max-w-2xl mx-auto">
-              Search verified doctors, compare fees and availability, and book a
-              visit that fits your schedule - then follow up securely after
-              your appointment.
+              Not sure who to see? Ask our AI health assistant. Know exactly who you need?
+              Search, compare ratings, and book in seconds - then message or video call
+              your doctor and get reminded before every visit.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -134,10 +134,10 @@ const LandingPage = () => {
       {/* Features Section */}
       <div className="py-20 bg-base-100">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-4">Simple booking, secure follow-up</h2>
+          <h2 className="text-4xl font-bold text-center mb-4">Everything a visit needs, built in</h2>
           <p className="text-center text-base-content/70 mb-12 max-w-2xl mx-auto">
-            Not another chat app. ConnectMedic is designed around how care teams actually
-            communicate with the people they treat.
+            Not another chat app. ConnectMedic covers the whole loop - finding the right
+            doctor, booking, talking to them, and following up - in one place.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">

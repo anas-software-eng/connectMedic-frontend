@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import { Users } from "lucide-react";
-import { axiosInstance } from "../lib/axios";
+import { ShieldBan, ShieldCheck, Users } from "lucide-react";
+import { useAdminStore } from "../store/useAdminStore";
+import { useAuthStore } from "../store/useAuthStore";
 
 const ROLE_TABS = [
   { id: "", label: "All" },
@@ -10,25 +10,14 @@ const ROLE_TABS = [
   { id: "admin", label: "Admins" },
 ];
 
-const ROLE_BADGE = {
-  patient: "badge-info",
-  doctor: "badge-primary",
-  admin: "badge-warning",
-};
-
 const AdminUsersPage = () => {
   const [role, setRole] = useState("");
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { users, isFetching, fetchUsers, updateUserRole, setUserBanned } = useAdminStore();
+  const { authUser } = useAuthStore();
 
   useEffect(() => {
-    setLoading(true);
-    axiosInstance
-      .get("/admin/users", { params: { role } })
-      .then((res) => setUsers(res.data))
-      .catch((error) => toast.error(error.response?.data?.message || "Failed to load users"))
-      .finally(() => setLoading(false));
-  }, [role]);
+    fetchUsers(role);
+  }, [role, fetchUsers]);
 
   return (
     <div className="space-y-5">
@@ -47,34 +36,62 @@ const AdminUsersPage = () => {
         ))}
       </div>
 
-      {loading ? (
+      {isFetching ? (
         <div className="bg-base-100 border border-base-300/70 rounded-2xl animate-pulse h-40" />
       ) : (
         <div className="bg-base-100 border border-base-300/70 rounded-2xl shadow-sm overflow-hidden">
           {users.length ? (
             <ul className="divide-y divide-base-300/70">
-              {users.map((user) => (
-                <li key={user._id} className="px-5 py-4 flex items-center gap-3">
-                  <img
-                    src={user.profilePic || "/avatar.png"}
-                    alt={user.fullName}
-                    className="size-10 rounded-full object-cover"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium truncate">{user.fullName}</p>
-                    <p className="text-xs text-base-content/55 truncate">{user.email}</p>
-                  </div>
-                  <span className={`badge badge-sm ${ROLE_BADGE[user.role] || "badge-ghost"} capitalize`}>
-                    {user.role}
-                  </span>
-                  <span className="text-xs text-base-content/40 hidden sm:block">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </span>
-                </li>
-              ))}
+              {users.map((user) => {
+                const isSelf = user._id === authUser?._id;
+                return (
+                  <li key={user._id} className="px-5 py-4 flex flex-wrap items-center gap-3">
+                    <img
+                      src={user.profilePic || "/avatar.png"}
+                      alt={user.fullName}
+                      className="size-10 rounded-full object-cover"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate flex items-center gap-2">
+                        {user.fullName}
+                        {isSelf && <span className="badge badge-ghost badge-xs">You</span>}
+                        {user.isBanned && <span className="badge badge-error badge-xs">Banned</span>}
+                      </p>
+                      <p className="text-xs text-base-content/72 truncate">{user.email}</p>
+                    </div>
+
+                    <select
+                      value={user.role}
+                      disabled={isSelf}
+                      onChange={(e) => updateUserRole(user._id, e.target.value)}
+                      className="select select-bordered select-sm capitalize"
+                    >
+                      {["patient", "doctor", "admin"].map((r) => (
+                        <option key={r} value={r} className="capitalize">
+                          {r}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      type="button"
+                      disabled={isSelf}
+                      onClick={() => setUserBanned(user._id, !user.isBanned)}
+                      className={`btn btn-sm gap-1.5 ${user.isBanned ? "btn-success" : "btn-ghost text-error"}`}
+                    >
+                      {user.isBanned ? <ShieldCheck className="size-4" /> : <ShieldBan className="size-4" />}
+                      {user.isBanned ? "Unban" : "Ban"}
+                    </button>
+
+                    <span className="text-xs text-base-content/65 hidden sm:block w-full sm:w-auto">
+                      Joined {new Date(user.createdAt).toLocaleDateString()}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
-            <div className="px-6 py-14 text-center text-sm text-base-content/55">
+            <div className="px-6 py-14 text-center text-sm text-base-content/72">
               No users found.
             </div>
           )}

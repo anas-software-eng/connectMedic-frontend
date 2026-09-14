@@ -109,15 +109,17 @@ const SignUpPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="form-control">
-              <label className="label">
+              <label className="label" htmlFor="signup-name">
                 <span className="label-text font-medium">{copy.nameLabel}</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="size-5 text-base-content/40" />
+                  <User className="size-5 text-base-content/65" />
                 </div>
                 <input
+                  id="signup-name"
                   type="text"
+                  autoComplete="name"
                   className={`input input-bordered w-full pl-10`}
                   placeholder={copy.namePlaceholder}
                   value={formData.fullName}
@@ -127,15 +129,17 @@ const SignUpPage = () => {
             </div>
 
             <div className="form-control">
-              <label className="label">
+              <label className="label" htmlFor="signup-email">
                 <span className="label-text font-medium">Email</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="size-5 text-base-content/40" />
+                  <Mail className="size-5 text-base-content/65" />
                 </div>
                 <input
+                  id="signup-email"
                   type="email"
+                  autoComplete="email"
                   className={`input input-bordered w-full pl-10`}
                   placeholder={copy.emailPlaceholder}
                   value={formData.email}
@@ -145,15 +149,17 @@ const SignUpPage = () => {
             </div>
 
             <div className="form-control">
-              <label className="label">
+              <label className="label" htmlFor="signup-password">
                 <span className="label-text font-medium">Password</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="size-5 text-base-content/40" />
+                  <Lock className="size-5 text-base-content/65" />
                 </div>
                 <input
+                  id="signup-password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
                   className={`input input-bordered w-full pl-10`}
                   placeholder="••••••••"
                   value={formData.password}
@@ -163,11 +169,12 @@ const SignUpPage = () => {
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <EyeOff className="size-5 text-base-content/40" />
+                    <EyeOff className="size-5 text-base-content/65" />
                   ) : (
-                    <Eye className="size-5 text-base-content/40" />
+                    <Eye className="size-5 text-base-content/65" />
                   )}
                 </button>
               </div>

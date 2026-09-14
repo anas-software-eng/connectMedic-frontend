@@ -1,6 +1,9 @@
+import { useEffect } from "react";
 import { NavLink, Outlet, Link } from "react-router-dom";
 import BackButton from "../components/BackButton";
 import { useAuthStore } from "../store/useAuthStore";
+import { useChatStore } from "../store/useChatStore";
+import { useNotificationStore } from "../store/useNotificationStore";
 import { getDashboardConfig } from "../constants/dashboard";
 
 const today = () =>
@@ -11,8 +14,21 @@ const today = () =>
   });
 
 const DashBoard = () => {
-  const { authUser, onlineUsers } = useAuthStore();
+  const { authUser, onlineUsers, socket } = useAuthStore();
+  const { getConversations, attachSocketListeners, detachSocketListeners } = useChatStore();
+  const { getNotifications } = useNotificationStore();
   const config = getDashboardConfig(authUser?.role);
+
+  // Live updates (new messages, typing, read receipts, notifications) need
+  // to work no matter which dashboard page is on screen, not just while the
+  // chat thread happens to be open — so this mounts once for the whole shell.
+  useEffect(() => {
+    if (!socket) return;
+    attachSocketListeners();
+    getConversations();
+    getNotifications();
+    return () => detachSocketListeners();
+  }, [socket, attachSocketListeners, detachSocketListeners, getConversations, getNotifications]);
 
   // Live values the client already knows about; everything else stays at its
   // configured default until a real endpoint backs it.
@@ -43,7 +59,7 @@ const DashBoard = () => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="badge badge-primary  p-3 font-bold">{config.label}</span>
-                <span className="text-xs text-base-content/50">{today()}</span>
+                <span className="text-xs text-base-content/72">{today()}</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">
                 Welcome back, {firstName}
@@ -89,9 +105,10 @@ const DashBoard = () => {
             </div>
           </nav>
 
-          <main className="flex-1 min-w-0">
+          {/* A content column, not a landmark — RootLayout's <main> already owns that role. */}
+          <div className="flex-1 min-w-0">
             <Outlet context={{ config, authUser, liveValues }} />
-          </main>
+          </div>
         </div>
       </div>
     </div>
