@@ -1,10 +1,10 @@
 import axios from "axios";
 
-// In production the frontend (Vercel) and backend (Render) are separate
-// domains, so the API base can't just be a relative "/api" — it needs the
-// backend's real URL, supplied at build time via VITE_API_URL.
+// VITE_API_URL always wins when set (e.g. pointing a local dev server at the
+// deployed Render backend instead of a local one). Falls back to a local
+// backend in dev, or same-origin in production if it's ever left unset.
 const API_ORIGIN =
-  import.meta.env.MODE === "development" ? "http://localhost:7500" : import.meta.env.VITE_API_URL || "";
+  import.meta.env.VITE_API_URL || (import.meta.env.MODE === "development" ? "http://localhost:7500" : "");
 
 export const axiosInstance = axios.create({
   baseURL: `${API_ORIGIN}/api`,

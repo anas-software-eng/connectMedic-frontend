@@ -4,10 +4,9 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { getErrorMessage } from "../lib/utils.js";
 
-// Same backend origin the axios client uses — see lib/axios.js for why this
-// can't just be a relative path once frontend/backend are on separate domains.
+// Same backend origin the axios client uses — see lib/axios.js.
 const BASE_URL =
-  import.meta.env.MODE === "development" ? "http://localhost:7500" : import.meta.env.VITE_API_URL || "";
+  import.meta.env.VITE_API_URL || (import.meta.env.MODE === "development" ? "http://localhost:7500" : "");
 
 // Guards against a misconfigured VITE_API_URL: a same-origin request falls
 // through Vercel's SPA rewrite (vercel.json) to index.html, a 200 with no
