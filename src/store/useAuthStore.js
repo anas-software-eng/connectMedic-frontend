@@ -9,6 +9,11 @@ import { getErrorMessage } from "../lib/utils.js";
 const BASE_URL =
   import.meta.env.MODE === "development" ? "http://localhost:7500" : import.meta.env.VITE_API_URL || "";
 
+// Guards against a misconfigured VITE_API_URL: a same-origin request falls
+// through Vercel's SPA rewrite (vercel.json) to index.html, a 200 with no
+// real user, instead of the backend's real response.
+const isUser = (data) => !!data && typeof data === "object" && !!data._id;
+
 export const useAuthStore = create((set, get) => ({
   authUser: null,
   isSigningUp: false,
@@ -21,6 +26,7 @@ export const useAuthStore = create((set, get) => ({
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/check");
+      if (!isUser(res.data)) throw new Error("Unexpected /auth/check response");
 
       set({ authUser: res.data });
       get().connectSocket();
@@ -36,6 +42,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/auth/signup", data);
+      if (!isUser(res.data)) throw new Error("Server is unreachable right now. Please try again shortly.");
       set({ authUser: res.data });
       toast.success("Account created successfully");
       get().connectSocket();
@@ -50,6 +57,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoggingIn: true });
     try {
       const res = await axiosInstance.post("/auth/login", data);
+      if (!isUser(res.data)) throw new Error("Server is unreachable right now. Please try again shortly.");
       set({ authUser: res.data });
       toast.success("Logged in successfully");
 
